@@ -18,22 +18,12 @@ namespace CodeJam5ProjectManagement
             {
                 Console.WriteLine("Enter StatusID:");
                 var statusId = Console.ReadLine() ?? "";
+                //statusId, employeeID, storyName
 
-                Console.WriteLine("Enter Employee First Name:");
-                var employeeFirstName = Console.ReadLine() ?? "";
-
-                Console.WriteLine("Enter Emlpoyee Last Name");
-                var employeeLastName = Console.ReadLine() ?? "";
+                Employee e = GetEmployee(context);
 
                 Console.WriteLine("Enter Storyname:");
                 var storyName = Console.ReadLine() ?? "";
-                //statusId, employeeID, storyName
-
-                Employee e = context.Employees.FirstOrDefault(
-                    a =>
-                    a.FirstName == employeeFirstName &&
-                    a.LastName == employeeLastName
-                );
 
                 Story newStory = new Story
                 {
@@ -143,59 +133,80 @@ namespace CodeJam5ProjectManagement
             
         }
 
-    
+
         public static void MoveStory()
         {
             using (var context = new ProjectDbContext())
             {
-                // change statusId
-                Console.WriteLine("Enter story you want to move");
-                string storyName = Console.ReadLine() ?? "";
-                
-                Console.WriteLine("Enter new status");
-                string statusName = Console.ReadLine().ToLower() ?? "";
+                // Validate and get the story name
+                string storyName;
+                Story? story = null;
+                do
+                {
+                    Console.WriteLine("Enter the story you want to move:");
+                    storyName = Console.ReadLine()?.Trim() ?? "";
 
-                Story story = context.Stories.FirstOrDefault(a => a.StoryName == storyName);
-                
+                    if (string.IsNullOrWhiteSpace(storyName))
+                    {
+                        Console.WriteLine("Story name cannot be empty. Please enter a valid story name.");
+                        continue;
+                    }
+
+                    // Find the story in the database
+                    story = context.Stories.FirstOrDefault(a => a.StoryName == storyName);
+
+                    if (story == null)
+                    {
+                        Console.WriteLine("Story not found. Please enter a valid story name.");
+                    }
+
+                } while (story == null);
+
+                // Validate the new status
+                string statusName;
                 int statusId = story.StatusId;
-                bool ret = false;
+                bool validStatus = false;
 
-                switch (statusName)
+                do
                 {
-                    case "backLog":
-                        statusId = 1;
-                        break;
-                    case "in progress":
-                        statusId = 2;
-                        break;
-                    case "ready for testing":
-                        statusId = 3;
-                        break;
-                    case "completed":
-                        statusId = 4;
-                        break;
-                    default:
-                        Console.WriteLine("Status does not exist, current status will remain the same \n");
-                        ret = true;
-                        break;
-                }
+                    Console.WriteLine("Enter the new status (backlog, in progress, ready for testing, completed):");
+                    statusName = Console.ReadLine()?.Trim().ToLower() ?? "";
 
-                if (ret)
+                    switch (statusName)
+                    {
+                        case "backlog":
+                            statusId = 1;
+                            validStatus = true;
+                            break;
+                        case "in progress":
+                            statusId = 2;
+                            validStatus = true;
+                            break;
+                        case "ready for testing":
+                            statusId = 3;
+                            validStatus = true;
+                            break;
+                        case "completed":
+                            statusId = 4;
+                            validStatus = true;
+                            break;
+                        default:
+                            Console.WriteLine("Invalid status. Please enter one of the following: backlog, in progress, ready for testing, completed.");
+                            break;
+                    }
+                } while (!validStatus);
+                // Update the status and save changes
+                if (story != null)
                 {
-                    return;
-                }
-
-                if (story != null) {
                     story.StatusId = statusId;
                     context.SaveChanges();
-
-                    Console.WriteLine($"Successfully moved story to: {statusName}\n");
+                    Console.WriteLine($"Successfully moved story '{storyName}' to: {statusName}\n");
                 }
-
-                
             }
-
         }
+
+
+
 
         public static void ViewSpecificStory()
         {
@@ -243,11 +254,14 @@ namespace CodeJam5ProjectManagement
                     e.LastName == employeeLastName
                 );
 
-                if (employee != null) {
-                    foreach(Story s in employee.stories) {
+                if (employee != null)
+                {
+                    foreach (Story s in employee.stories)
+                    {
                         Console.WriteLine($"{s.StoryName}\n{s.status.StatusName} \n");
                     }
                 }
+                else Console.WriteLine("Could not find employee. Please try again.");
 
                 
 
@@ -283,7 +297,36 @@ namespace CodeJam5ProjectManagement
             }
         }
 
+        public static Employee GetEmployee(ProjectDbContext context)
+        {
+            Employee employee = null;
+
+            // Keep looping until a valid employee is found
+            while (employee == null)
+            {
+                Console.WriteLine("Enter Employee First Name:");
+                var employeeFirstName = Console.ReadLine() ?? "";
+
+                Console.WriteLine("Enter Employee Last Name:");
+                var employeeLastName = Console.ReadLine() ?? "";
+
+                // Search for the employee in the database
+                employee = context.Employees.FirstOrDefault(
+                    a => a.FirstName == employeeFirstName &&
+                         a.LastName == employeeLastName
+                );
+
+                if (employee == null)
+                {
+                    Console.WriteLine("Existing employee not found. Please try again.");
+                }
+            }
+
+            return employee;
+        }
 
     }
+
+
 }
         
