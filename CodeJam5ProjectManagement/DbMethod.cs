@@ -34,16 +34,23 @@ namespace CodeJam5ProjectManagement
                     a.FirstName == employeeFirstName &&
                     a.LastName == employeeLastName
                 );
-
-                Story newStory = new Story
+                if (e != null)
                 {
-                    StoryName = storyName,
-                    StatusId = int.Parse(statusId),
-                    EmployeeId = e.EmployeeId
-                };
 
-                context.Stories.Add(newStory);
-                context.SaveChanges();
+                    Story newStory = new Story
+                    {
+                        StoryName = storyName,
+                        StatusId = int.Parse(statusId),
+                        EmployeeId = e.EmployeeId
+                    };
+
+                    context.Stories.Add(newStory);
+                    context.SaveChanges();
+                }
+                else
+                {
+                    Console.WriteLine("Employee does not exist!");
+                }
 
             }
         }
@@ -156,6 +163,7 @@ namespace CodeJam5ProjectManagement
                 string statusName = Console.ReadLine().ToLower() ?? "";
 
                 Story story = context.Stories.FirstOrDefault(a => a.StoryName == storyName);
+
                 
                 int statusId = story.StatusId;
                 bool ret = false;
@@ -247,6 +255,14 @@ namespace CodeJam5ProjectManagement
                     foreach(Story s in employee.stories) {
                         Console.WriteLine($"{s.StoryName}\n{s.status.StatusName} \n");
                     }
+                    if (employee.stories.Count == 0)
+                    {
+                        Console.WriteLine(employee.FirstName + " " + employeeLastName + " does not have any stories");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Employee does not exist");
                 }
 
                 
@@ -256,7 +272,7 @@ namespace CodeJam5ProjectManagement
 
         public static void AssignEmployee() {
             using (var context = new ProjectDbContext()) {
-                Console.WriteLine("Enter story you want to assign");
+                Console.WriteLine("Enter the name of the story you want to assign");
                 string storyName = Console.ReadLine() ?? "";
 
                 Console.WriteLine("Enter Employee you want to assign story to");
