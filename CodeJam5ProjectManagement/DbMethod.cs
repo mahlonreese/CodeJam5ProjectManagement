@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+//Great job! I added a check so it will check for an employees existence or not. I really enjoyed the project. 
+
+using Microsoft.EntityFrameworkCore;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -34,6 +36,13 @@ namespace CodeJam5ProjectManagement
                     a.FirstName == employeeFirstName &&
                     a.LastName == employeeLastName
                 );
+
+                // New check for employee existence
+                if (e == null)
+                {
+                    Console.WriteLine("Employee not found. Please check the names and try again.");
+                    return; // Exit the method if employee is not found
+                }
 
                 Story newStory = new Story
                 {
